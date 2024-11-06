@@ -78,9 +78,9 @@ type Resultado struct {
 	Err      error
 }
 
-func buscarBrasilAPI(ctx context.Context, cep string, ch chan Resultado) {
+func getBrasilAPI(ctx context.Context, cep string, ch chan Resultado) {
 	url := fmt.Sprintf("https://brasilapi.com.br/api/cep/v1/%s", cep)
-	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		ch <- Resultado{Err: err}
 		return
@@ -102,9 +102,9 @@ func buscarBrasilAPI(ctx context.Context, cep string, ch chan Resultado) {
 	ch <- Resultado{Endereco: endereco, API: "BrasilAPI"}
 }
 
-func buscarViaCEP(ctx context.Context, cep string, ch chan Resultado) {
+func getViaCEP(ctx context.Context, cep string, ch chan Resultado) {
 	url := fmt.Sprintf("http://viacep.com.br/ws/%s/json/", cep)
-	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		ch <- Resultado{Err: err}
 		return
@@ -132,8 +132,8 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
-	go buscarBrasilAPI(ctx, cep, ch)
-	go buscarViaCEP(ctx, cep, ch)
+	go getBrasilAPI(ctx, cep, ch)
+	go getViaCEP(ctx, cep, ch)
 
 	select {
 	case resultado := <-ch:
